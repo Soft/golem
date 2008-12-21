@@ -8,11 +8,19 @@ abstract class Controller {
 	public $View = null;
 	public $AutoRender = true;
 	protected $models = null;
+	protected $arguments = array();
 	
 	final public function __construct() {
 		if ($this->models === null) {
 			$modelName = preg_replace("/^(.+)Controller$/", "$1Model", get_class($this), 1);
 			$this->models = array($modelName);
+		}
+		$this->arguments = $_GET;
+		if (isset($this->arguments["controller"])) {
+			unset($this->arguments["controller"]);
+		}
+		if (isset($this->arguments["action"])) {
+			unset($this->arguments["action"]);
 		}
 		$this->loadModels();
 		$this->OnCreated();

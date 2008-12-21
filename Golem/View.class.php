@@ -17,7 +17,7 @@ class View {
 	}
 	
 	public function Render() {
-		var_export($this->values);
+		extract($this->values, EXTR_SKIP);
 		require($this->Path);
 	}
 	
@@ -26,4 +26,3 @@ class View {
 	}
 	
 }
-

@@ -56,7 +56,16 @@ class Router {
 				$action = $this->DefaultAction;
 			}
 			if ($this->ActionExists($action)) {
+				$this->controller->view = new View(
+						get_class($this->controller),
+						$action
+					);
+				$this->controller->BeforeAction();
 				$this->controller->$action();
+				$this->controller->AfterAction();
+				if ($this->controller->autoRender) {
+					$this->controller->view->Render();
+				}
 			} else {
 				throw new Exception(
 						sprintf(

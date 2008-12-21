@@ -37,14 +37,14 @@ class Router {
 			} else {
 				throw new Exception(
 					sprintf(
-						"File %s doesn't contain definition for %s controller.",
+						"File '%s' doesn't contain definition for '%s' controller.",
 						basename($this->getControllerPath($controllerName)),
 						$controllerName
 					)
 				);
 			}
 		} else {
-			throw new Exception("Cannot find $controllerName controller.");
+			throw new Exception("Cannot find '$controllerName' controller.");
 		}
 	}
 	
@@ -61,7 +61,10 @@ class Router {
 						$action
 					);
 				$this->controller->BeforeAction();
-				$this->controller->$action();
+				
+				$args = $this->parseActionParameters($action);
+				call_user_func_array(array(&$this->controller, $action), $args);
+				
 				$this->controller->AfterAction();
 				if ($this->controller->AutoRender) {
 					$this->controller->View->Render();
@@ -69,7 +72,7 @@ class Router {
 			} else {
 				throw new Exception(
 						sprintf(
-								"Action %s doesn't exist in %s controller",
+								"Action '%s' doesn't exist in '%s' controller",
 								$action,
 								get_class($this->controller)
 							)
@@ -92,6 +95,37 @@ class Router {
 			}
 		}
 		return false;
+	}
+	
+	private function parseActionParameters($action) {
+		$reflector = new ReflectionMethod(
+			get_class($this->controller),
+			$action
+		);
+		$params = $reflector->getParameters();
+		$comment = $reflector->getDocComment();
+		
+		$args = array();
+		foreach ($params as $param) {
+			$name = $param->getName();
+			if (!preg_match("/^\s*\*\s\+\s*GET\s+([^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
+				throw new Exception("'$name' parameter for '$action' action isn't binded to GET parameter.");
+			}
+			if (isset($this->Arguments[$match[1]])) {
+				$args[] = $this->Arguments[$match[1]];
+			} else {
+				throw new Exception(
+					sprintf(
+						"Action '%s' in '%s' controller requires '%s' as GET parameter.",
+						$action,
+						get_class($this->controller),
+						$match[1]
+					)
+				);
+			}
+			
+		}
+		return $args;
 	}
 	
 	private function getControllerPath($name) {

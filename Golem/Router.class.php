@@ -36,15 +36,15 @@ class Router {
 				}
 			} else {
 				throw new Exception(
-						sprintf(
-							"File %s doesn't contain definition for %s controller.",
-							basename($this->getControllerPath($controllerName)),
-							$controllerName
-						)
-					);
+					sprintf(
+						"File %s doesn't contain definition for %s controller.",
+						basename($this->getControllerPath($controllerName)),
+						$controllerName
+					)
+				);
 			}
 		} else {
-			throw new Exception("Cannot find {$this->DefaultController} controller.");
+			throw new Exception("Cannot find $controllerName controller.");
 		}
 	}
 	

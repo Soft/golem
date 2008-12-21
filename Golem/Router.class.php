@@ -8,6 +8,7 @@ class Router {
 	public $DefaultController = "IndexController";
 	public $DefaultAction = "Index";
 	private $controller = null;
+	private $action = null;
 	
 	public function __construct() {
 		$this->Arguments = $_GET;
@@ -114,14 +115,18 @@ class Router {
 			if (isset($this->Arguments[$match[1]])) {
 				$args[] = $this->Arguments[$match[1]];
 			} else {
-				throw new Exception(
-					sprintf(
-						"Action '%s' in '%s' controller requires '%s' as GET parameter.",
-						$action,
-						get_class($this->controller),
-						$match[1]
-					)
-				);
+				if ($param->isDefaultValueAvailable()) {
+					$args[] = $param->getDefaultValue();
+				} else {
+					throw new Exception(
+						sprintf(
+							"Action '%s' in '%s' controller requires '%s' as GET parameter.",
+							$action,
+							get_class($this->controller),
+							$match[1]
+						)
+					);
+				}
 			}
 			
 		}

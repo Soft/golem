@@ -56,15 +56,15 @@ class Router {
 				$action = $this->DefaultAction;
 			}
 			if ($this->ActionExists($action)) {
-				$this->controller->view = new View(
+				$this->controller->View = new View(
 						get_class($this->controller),
 						$action
 					);
 				$this->controller->BeforeAction();
 				$this->controller->$action();
 				$this->controller->AfterAction();
-				if ($this->controller->autoRender) {
-					$this->controller->view->Render();
+				if ($this->controller->AutoRender) {
+					$this->controller->View->Render();
 				}
 			} else {
 				throw new Exception(
@@ -84,8 +84,10 @@ class Router {
 	
 	public function ActionExists($actionName) {
 		if ($this->controller) {
+			$denied = array("BeforeAction", "AfterAction");
 			if (method_exists($this->controller, $actionName) &&
-				!preg_match("/^__.+$/", $actionName)) {
+				!preg_match("/^__.+$/", $actionName) &&
+				!in_array($actionName, $denied)) {
 				return true;
 			}
 		}

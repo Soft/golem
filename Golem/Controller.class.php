@@ -5,8 +5,8 @@
 */
 abstract class Controller {
 	
-	public $view = null;
-	public $autoRender = true;
+	public $View = null;
+	public $AutoRender = true;
 	
 	public function beforeAction() {}
 	public function afterAction() {}

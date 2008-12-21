@@ -1,3 +1,3 @@
-App/Controllers/*.controller.php
-App/Models/*.model.php
+App/Controllers/*.php
+App/Models/*.php
 App/Views/*.view

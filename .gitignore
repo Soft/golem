@@ -1,3 +1,4 @@
 App/Controllers/*.php
 App/Models/*.php
-App/Views/*.view
+App/Views/*
+!App/Views/EMPTY

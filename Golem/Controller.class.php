@@ -18,7 +18,7 @@ abstract class Controller {
 		$this->OnCreated();
 	}
 	
-	final private function loadModels() {
+	private function loadModels() {
 		if (is_array($this->models)) {
 			foreach ($this->models as $modelName) {
 				if (file_exists($this->getModelPath($modelName))) {
@@ -46,7 +46,7 @@ abstract class Controller {
 		}
 	}
 	
-	final private function getModelPath($modelName) {
+	private function getModelPath($modelName) {
 		return APPDIR . DS . "Models". DS . $modelName . ".php";
 	}
 	

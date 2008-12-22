@@ -6,6 +6,7 @@
 abstract class Controller {
 	
 	public $AutoRender = true;
+	public $DefaultAction = "Index";
 	
 	protected $view = null;
 	protected $models = null;
@@ -13,23 +14,36 @@ abstract class Controller {
 	
 	private $actionName;
 	
-	final public function __construct($actionName) {
+	final public function __construct() {
 		if ($this->models === null) {
 			$modelName = preg_replace("/^(.+)Controller$/", "$1Model", get_class($this), 1);
 			$this->models = array($modelName);
 		}
+		
 		$this->arguments = $_GET;
-		if (isset($this->arguments["controller"])) {
-			unset($this->arguments["controller"]);
-		}
 		if (isset($this->arguments["action"])) {
-			unset($this->arguments["action"]);
+			$this->actionName = $this->arguments["action"];
+		} else {
+			$this->actionName = $this->DefaultAction;
 		}
-		$this->actionName = $actionName;
+		
+		if (!$this->actionExists($this->actionName)) {
+			throw new Exception(
+				sprintf(
+					"Action '%s' doesn't exist in '%s' controller",
+					$this->actionName,
+					get_class($this)
+				)
+			);
+		}
+		
+		unset($this->arguments["controller"], $this->arguments["action"]);
+		
 		$this->view = new View(
 			get_class($this),
-			$actionName
+			$this->actionName
 		);
+		
 		$this->loadModels();
 		$this->OnCreated();
 	}
@@ -86,10 +100,10 @@ abstract class Controller {
 		foreach ($params as $param) {
 			$name = $param->getName();
 			if (!preg_match("/^\s*\*\s\+\s*GET\s+([^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
-				throw new Exception("'$name' parameter for '$action' action isn't binded to GET parameter.");
+				throw new Exception("'$name' parameter for '$this->actionName' action isn't binded to GET parameter.");
 			}
-			if (isset($this->Arguments[$match[1]])) {
-				$args[] = $this->Arguments[$match[1]];
+			if (isset($this->arguments[$match[1]])) {
+				$args[] = $this->arguments[$match[1]];
 			} else {
 				if ($param->isDefaultValueAvailable()) {
 					$args[] = $param->getDefaultValue();
@@ -97,8 +111,8 @@ abstract class Controller {
 					throw new Exception(
 						sprintf(
 							"Action '%s' in '%s' controller requires '%s' as GET parameter.",
-							$action,
-							$this->controllerName,
+							$this->actionName,
+							get_class($this),
 							$match[1]
 						)
 					);
@@ -109,8 +123,18 @@ abstract class Controller {
 		return $args;
 	}
 	
-	public function GetView() {
-		return $this->view;
+	private function actionExists() {
+		$reflector = new ReflectionClass(get_class($this));
+		if ($reflector->hasMethod($this->actionName)) {
+			$method = $reflector->getMethod($this->actionName);
+			$denied = array("BeforeAction", "AfterAction");
+			if ($method->isPublic() &&
+				!preg_match("/^__.+$/", $this->actionName) &&
+				!in_array($this->actionName, $denied)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private function getModelPath($modelName) {
@@ -122,5 +146,4 @@ abstract class Controller {
 	public function AfterAction() {}
 	
 }
-
 

@@ -5,10 +5,13 @@
 */
 abstract class Controller {
 	
-	protected $view = null;
 	public $AutoRender = true;
+	
+	protected $view = null;
 	protected $models = null;
 	protected $arguments = array();
+	
+	private $actionName;
 	
 	final public function __construct($actionName) {
 		if ($this->models === null) {
@@ -22,6 +25,7 @@ abstract class Controller {
 		if (isset($this->arguments["action"])) {
 			unset($this->arguments["action"]);
 		}
+		$this->actionName = $actionName;
 		$this->view = new View(
 			get_class($this),
 			$actionName
@@ -56,6 +60,53 @@ abstract class Controller {
 				}
 			}
 		}
+	}
+	
+	public function Run() {
+		$args = $this->parseActionParameters();
+		
+		$this->BeforeAction();
+		call_user_func_array(array(&$this, $this->actionName), $args);
+		$this->AfterAction();
+		
+		if ($this->AutoRender) {
+			$this->view->Render();
+		}
+	}
+	
+	private function parseActionParameters() {
+		$reflector = new ReflectionMethod(
+			get_class($this),
+			$this->actionName
+		);
+		$params = $reflector->getParameters();
+		$comment = $reflector->getDocComment();
+		
+		$args = array();
+		foreach ($params as $param) {
+			$name = $param->getName();
+			if (!preg_match("/^\s*\*\s\+\s*GET\s+([^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
+				throw new Exception("'$name' parameter for '$action' action isn't binded to GET parameter.");
+			}
+			if (isset($this->Arguments[$match[1]])) {
+				$args[] = $this->Arguments[$match[1]];
+			} else {
+				if ($param->isDefaultValueAvailable()) {
+					$args[] = $param->getDefaultValue();
+				} else {
+					throw new Exception(
+						sprintf(
+							"Action '%s' in '%s' controller requires '%s' as GET parameter.",
+							$action,
+							$this->controllerName,
+							$match[1]
+						)
+					);
+				}
+			}
+			
+		}
+		return $args;
 	}
 	
 	public function GetView() {

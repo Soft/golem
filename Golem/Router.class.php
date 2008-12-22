@@ -30,7 +30,7 @@ class Router {
 	
 	public function Route() {
 		$this->initializeController();
-		$this->executeAction();
+		$this->controller->Run();
 	}
 	
 	private function initializeController() {
@@ -70,21 +70,6 @@ class Router {
 		}
 	}
 	
-	private function executeAction() {	
-		if ($this->controller) {
-			$this->controller->BeforeAction();
-			
-			$args = $this->parseActionParameters($this->actionName);
-			call_user_func_array(array(&$this->controller, $this->actionName), $args);
-			
-			$this->controller->AfterAction();
-			
-			if ($this->controller->AutoRender) {
-				$this->controller->GetView()->Render();
-			}
-		}
-	}
-	
 	public function ControllerExists($name) {
 		return file_exists($this->getControllerPath($name));
 	}
@@ -101,41 +86,6 @@ class Router {
 			}
 		}
 		return false;
-	}
-	
-	private function parseActionParameters($action) {
-		$reflector = new ReflectionMethod(
-			$this->controllerName,
-			$action
-		);
-		$params = $reflector->getParameters();
-		$comment = $reflector->getDocComment();
-		
-		$args = array();
-		foreach ($params as $param) {
-			$name = $param->getName();
-			if (!preg_match("/^\s*\*\s\+\s*GET\s+([^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
-				throw new Exception("'$name' parameter for '$action' action isn't binded to GET parameter.");
-			}
-			if (isset($this->Arguments[$match[1]])) {
-				$args[] = $this->Arguments[$match[1]];
-			} else {
-				if ($param->isDefaultValueAvailable()) {
-					$args[] = $param->getDefaultValue();
-				} else {
-					throw new Exception(
-						sprintf(
-							"Action '%s' in '%s' controller requires '%s' as GET parameter.",
-							$action,
-							$this->controllerName,
-							$match[1]
-						)
-					);
-				}
-			}
-			
-		}
-		return $args;
 	}
 	
 	private function getControllerPath($name) {

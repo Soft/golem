@@ -8,7 +8,6 @@ class Router {
 	public $DefaultController = "IndexController";
 	public $DefaultAction = "Index";
 	private $controller = null;
-	private $action = null;
 	
 	public function __construct() {
 		$this->Arguments = $_GET;

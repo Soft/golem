@@ -44,7 +44,7 @@ class Router {
 					throw new Exception(
 						sprintf(
 								"Action '%s' doesn't exist in '%s' controller",
-								$action,
+								$this->actionName,
 								$this->controllerName
 							)
 					);

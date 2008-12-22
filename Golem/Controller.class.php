@@ -58,7 +58,7 @@ abstract class Controller {
 		}
 	}
 	
-	public function getView() {
+	public function GetView() {
 		return $this->view;
 	}
 	

@@ -80,7 +80,7 @@ class Router {
 			$this->controller->AfterAction();
 			
 			if ($this->controller->AutoRender) {
-				$this->controller->getView()->Render();
+				$this->controller->GetView()->Render();
 			}
 		}
 	}

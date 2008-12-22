@@ -26,8 +26,8 @@ class Router {
 	}
 	
 	private function initializeController() {
-		if ($this->ControllerExists($this->controllerName)) {
-			require_once($this->getControllerPath($this->controllerName));
+		if ($this->controllerExists()) {
+			require_once($this->getControllerPath());
 			if (class_exists($this->controllerName)) {
 				$controller = new $this->controllerName();
 				if (is_subclass_of($controller, "Controller")) {
@@ -40,7 +40,7 @@ class Router {
 				throw new Exception(
 					sprintf(
 						"File '%s' doesn't contain definition for '%s' controller.",
-						basename($this->getControllerPath($this->controllerName)),
+						basename($this->getControllerPath()),
 						$this->controllerName
 					)
 				);
@@ -50,12 +50,12 @@ class Router {
 		}
 	}
 	
-	public function ControllerExists($name) {
-		return file_exists($this->getControllerPath($name));
+	private function controllerExists() {
+		return file_exists($this->getControllerPath($this->controllerName));
 	}
 	
-	private function getControllerPath($name) {
-		return APPDIR . DS . "Controllers" . DS . $name . ".php";
+	private function getControllerPath() {
+		return APPDIR . DS . "Controllers" . DS . $this->controllerName . ".php";
 	}
 	
 }

@@ -5,12 +5,12 @@
 */
 abstract class Controller {
 	
-	public $View = null;
+	protected $view = null;
 	public $AutoRender = true;
 	protected $models = null;
 	protected $arguments = array();
 	
-	final public function __construct() {
+	final public function __construct($actionName) {
 		if ($this->models === null) {
 			$modelName = preg_replace("/^(.+)Controller$/", "$1Model", get_class($this), 1);
 			$this->models = array($modelName);
@@ -22,6 +22,10 @@ abstract class Controller {
 		if (isset($this->arguments["action"])) {
 			unset($this->arguments["action"]);
 		}
+		$this->view = new View(
+			get_class($this),
+			$actionName
+		);
 		$this->loadModels();
 		$this->OnCreated();
 	}
@@ -52,6 +56,10 @@ abstract class Controller {
 				}
 			}
 		}
+	}
+	
+	public function getView() {
+		return $this->view;
 	}
 	
 	private function getModelPath($modelName) {

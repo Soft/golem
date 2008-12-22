@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Class for finding and executing the right controller
+* Class for finding and executing the right controller.
 */
 class Router {
 	
@@ -20,6 +20,9 @@ class Router {
 		}		
 	}
 	
+	/**
+	 * Finds the right controller and executes it.
+	 */
 	public function Route() {
 		$this->initializeController();
 		$this->controller->Run();

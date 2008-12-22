@@ -99,11 +99,12 @@ abstract class Controller {
 		$args = array();
 		foreach ($params as $param) {
 			$name = $param->getName();
-			if (!preg_match("/^\s*\*\s\+\s*GET\s+([^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
+			if (!preg_match("/^\s*\*\s\+\s*GET\s+(?P<parameter>[^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
 				throw new Exception("'$name' parameter for '$this->actionName' action isn't binded to GET parameter.");
 			}
-			if (isset($this->arguments[$match[1]])) {
-				$args[] = $this->arguments[$match[1]];
+			if (isset($this->arguments[$match["parameter"]]) &&
+				trim($this->arguments[$match["parameter"]]) != "") {
+				$args[] = $this->arguments[$match["parameter"]];
 			} else {
 				if ($param->isDefaultValueAvailable()) {
 					$args[] = $param->getDefaultValue();
@@ -113,7 +114,7 @@ abstract class Controller {
 							"Action '%s' in '%s' controller requires '%s' as GET parameter.",
 							$this->actionName,
 							get_class($this),
-							$match[1]
+							$match["parameter"]
 						)
 					);
 				}
@@ -127,7 +128,7 @@ abstract class Controller {
 		$reflector = new ReflectionClass(get_class($this));
 		if ($reflector->hasMethod($this->actionName)) {
 			$method = $reflector->getMethod($this->actionName);
-			$denied = array("BeforeAction", "AfterAction");
+			$denied = array("BeforeAction", "AfterAction", "OnCreated", "Run");
 			if ($method->isPublic() &&
 				!preg_match("/^__.+$/", $this->actionName) &&
 				!in_array($this->actionName, $denied)) {

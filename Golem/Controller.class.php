@@ -99,26 +99,30 @@ abstract class Controller {
 		$args = array();
 		foreach ($params as $param) {
 			$name = $param->getName();
-			if (!preg_match("/^\s*\*\s\+\s*GET\s+(?P<parameter>[^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
-				throw new Exception("'$name' parameter for '$this->actionName' action isn't binded to GET parameter.");
+			if (!preg_match("/^\s*\*\s\+\s*(?P<method>GET|POST)\s+(?P<parameter>[^\s]+)\s+\\$$name\s*$/m", $comment, $match)) {
+				throw new Exception("'$name' parameter for '$this->actionName' action isn't binded to GET or POST parameter.");
 			}
-			if (isset($this->arguments[$match["parameter"]]) &&
-				trim($this->arguments[$match["parameter"]]) != "") {
-				$args[] = $this->arguments[$match["parameter"]];
+			
+			$source = ($match["method"] == "GET") ? $this->arguments : $_POST;
+			
+			if (isset($source[$match["parameter"]]) &&
+				trim($source[$match["parameter"]]) != "") {
+				$args[] = $source[$match["parameter"]];
 			} else {
 				if ($param->isDefaultValueAvailable()) {
 					$args[] = $param->getDefaultValue();
 				} else {
 					throw new Exception(
 						sprintf(
-							"Action '%s' in '%s' controller requires '%s' as GET parameter.",
+							"Action '%s' in '%s' controller requires '%s' as %s parameter.",
 							$this->actionName,
 							get_class($this),
-							$match["parameter"]
+							$match["parameter"],
+							$match["method"]
 						)
 					);
 				}
-			}
+			}	
 			
 		}
 		return $args;
